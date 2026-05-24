@@ -1,56 +1,67 @@
-let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+// Function to add a new task
+function addTask() {
+    const taskInput = document.getElementById('taskInput');
+    const taskText = taskInput.value.trim();
 
-function saveTasks() {
-  localStorage.setItem("tasks", JSON.stringify(tasks));
-}
+    // 1. Validation Check (Khali tasks stop karne ke liye)
+    if (taskText === "") {
+        taskInput.style.borderColor = "rgba(231, 76, 60, 0.5)";
+        setTimeout(() => taskInput.style.borderColor = "rgba(255, 255, 255, 0.1)", 1500);
+        return;
+    }
 
-function renderTasks() {
-  const list = document.getElementById("taskList");
-  list.innerHTML = "";
+    const taskList = document.getElementById('taskList');
 
-  tasks.forEach((task, index) => {
-    const li = document.createElement("li");
+    // 2. Element Generation
+    const li = document.createElement('li');
+    li.className = 'task-item';
 
+    // Inner element templates with Checkbox actions & Delete buttons
     li.innerHTML = `
-      <span>${task}</span>
-      <div class="actions">
-        <button class="edit" onclick="editTask(${index})">Edit</button>
-        <button onclick="deleteTask(${index})">Delete</button>
-      </div>
+        <span class="task-text" onclick="toggleTask(this)">
+            <i class="fa-regular fa-circle-check"></i> ${taskText}
+        </span>
+        <button class="action-btn delete-btn" onclick="deleteTask(this)">
+            <i class="fa-regular fa-trash-can"></i>
+        </button>
     `;
 
-    list.appendChild(li);
-  });
+    // Append to list and reset input focus
+    taskList.appendChild(li);
+    taskInput.value = "";
+    taskInput.focus();
 }
 
-function addTask() {
-  const input = document.getElementById("taskInput");
-  const value = input.value.trim();
-
-  if (value === "") return;
-
-  tasks.push(value);
-  saveTasks();
-  renderTasks();
-
-  input.value = "";
+// 3. Toggle Complete State (Line-through logic)
+function toggleTask(element) {
+    const taskItem = element.parentElement;
+    taskItem.classList.toggle('completed');
+    
+    const icon = element.querySelector('i');
+    if(taskItem.classList.contains('completed')) {
+        icon.className = 'fa-solid fa-circle-check';
+        icon.style.color = '#2ecc71';
+    } else {
+        icon.className = 'fa-regular fa-circle-check';
+        icon.style.color = '';
+    }
 }
 
-function deleteTask(index) {
-  tasks.splice(index, 1);
-  saveTasks();
-  renderTasks();
+// 4. Task Deletion Handler
+function deleteTask(element) {
+    const taskItem = element.parentElement;
+    taskItem.style.opacity = '0';
+    taskItem.style.transform = 'translateY(10px)';
+    
+    // Smooth animation completion wait
+    setTimeout(() => {
+        taskItem.remove();
+    }, 300);
 }
 
-function editTask(index) {
-  const newTask = prompt("Edit task:", tasks[index]);
-
-  if (newTask !== null && newTask.trim() !== "") {
-    tasks[index] = newTask.trim();
-    saveTasks();
-    renderTasks();
-  }
-}
-
-// Load tasks on start
-renderTasks();
+// 5. Input key listener (Enter dabane se add ho jaye)
+document.getElementById('taskInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        addTask();
+    }
+});
